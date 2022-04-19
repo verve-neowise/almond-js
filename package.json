@@ -1,0 +1,15 @@
+{
+  "name": "almond",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
