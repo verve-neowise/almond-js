@@ -4,7 +4,7 @@ import ValueType from "./ValueType";
 export default class BooleanValue implements Value {
 
 
-    constructor(private value: boolean) { }
+    constructor(public value: boolean) { }
 
     public asString(): string {
         return this.value.toString();
