@@ -1,8 +1,7 @@
-import Context from "../../../runtime/Context";
-import BooleanValue from "../../../runtime/value/BooleanValue";
-import Value from "../../../runtime/value/Value";
-import Visitor from "../../../visitors/Visitor";
-import Expression from "../Expression";
+import { Context, Value, Types } from "../../../runtime"
+import { Token } from "../../lexer"
+import { Visitor, Expression } from "../../node"
+
 
 export default class TernaryExpression implements Expression {
 
@@ -14,16 +13,14 @@ export default class TernaryExpression implements Expression {
 
     execute(context: Context): Value {
         let result = this.result.execute(context)
-        if (result instanceof BooleanValue) {
+        if (result.type === Types.Boolean) {
             if (result.value) {
                 return this.trueExpr.execute(context)
             } else {
                 return this.falseExpr.execute(context)
             }
         }
-        else {
-            throw Error("Ternary expression result is not boolean")
-        }
+        throw new Error(`Cannot apply ternary to ${result.type}`)
     }
 
     visit(visitor: Visitor): void {

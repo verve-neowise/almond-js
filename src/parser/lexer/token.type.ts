@@ -54,6 +54,7 @@ enum TokenType {
         AND_EQ = "&=",
         OR_EQ = "|=",
         XOR_EQ = "^=",
+        XOR = "^",
 
     // basic Keywords.
         

@@ -1,6 +1,6 @@
-import Node from "../parser/ast/Node";
+import ASTNode from "./node";
 
 export default interface Visitor {
-    visit(node: Node): void;
+    visit(node: ASTNode): void;
     visit(list: NodeList): void;
 }
