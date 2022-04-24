@@ -1,5 +1,5 @@
 import { VarDeclarationStatement } from ".";
-import { Context } from "../../../runtime";
+import { Context, Types, Value } from "../../../runtime";
 import { BreakError, ContinueError } from "../../errors";
 import { Token } from "../../lexer";
 import { Expression, Statement, Visitor } from "../../node";
@@ -37,11 +37,11 @@ export default class ForStatement implements Statement {
                     continue
                 }
             }
-
+            let step = this.step?.execute(context).value ?? 1;
             if (this.step) {
-                let step = this.step.execute(context).value;
-                variable.set(context, value + step);
+                step = this.step.execute(context).value;
             }
+            variable.set(context, new Value(value + step, Types.Number));
         }
     }
     visit(visitor: Visitor): void {

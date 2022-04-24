@@ -8,7 +8,6 @@ export default class InvokeExpression implements Expression {
 
     public execute(context: Context): Value {
         let target = this.target.execute(context)
-        console.log(target);
         if (target.type == Types.Function) {
             let args = this.args.map(arg => arg.execute(context))
             return target.value(context, args)

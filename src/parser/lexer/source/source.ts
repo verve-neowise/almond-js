@@ -16,7 +16,6 @@ export class Source {
 
     constructor(source: string) {
         this.source = source;
-        console.log(source);
         this.length = source.length;
     }
 
