@@ -1,4 +1,4 @@
-import { Source } from "../source/source"
+import { Source } from "./source/source"
 import Token from "./token"
 import TokenType from "./token.type"
 
@@ -23,8 +23,11 @@ const operators = [
 const keywords = [
     TokenType.IF, TokenType.ELSE,
     TokenType.WHILE, TokenType.DO,
-    TokenType.FOR, TokenType.TO, TokenType.DOWNTO,
-    TokenType.BREAK, TokenType.CONTINUE
+    TokenType.FOR, TokenType.TO, TokenType.DOWNTO, TokenType.STEP,
+    TokenType.BREAK, TokenType.CONTINUE,
+    TokenType.RETURN, TokenType.REPEAT,
+    TokenType.LET, TokenType.CONST,
+    TokenType.TRUE, TokenType.FALSE,
 ]
 
 function isDigit(char: string): boolean {
@@ -56,8 +59,6 @@ export default class Lexer {
     tokenize(): Token[] {
 
         while (!this.source.end()) {
-
-            let isEnd = this.source.end()
 
             let char = this.source.peek(0)
             
@@ -138,10 +139,6 @@ export default class Lexer {
         let current = this.source.peek(0)
 
         while(true) {
-            if (current === '\'') {
-                this.source.next()
-                break
-            }
             if (current === '\u0000') {
                 throw new Error("unterminated string at " + this.source.positionToString())
             }
@@ -195,11 +192,9 @@ export default class Lexer {
     }
 
     tokenizeComment() {
-        while(true) {
-            let current = this.source.peek(0)
-            if ('\r\n\u0000'.indexOf(current) === 1) {
+        let current = this.source.peek(0)
+        while ('\r\n\u0000'.indexOf(current) === -1) {
                 current = this.source.next()
-            }
         }
     }
 

@@ -10,6 +10,7 @@ import VariableExpression from "./variable.expression";
 import InvokeExpression from "./invoke.expression";
 import FieldAccessExpression from "./field-access.expression";
 import ArrayAccessExpression from "./array-access.expression";
+import ConditionExpression from "./condition.expression";
 
 export {
     NumberExpression,
@@ -23,5 +24,6 @@ export {
     VariableExpression,
     InvokeExpression,
     FieldAccessExpression,
-    ArrayAccessExpression
+    ArrayAccessExpression,
+    ConditionExpression
 }

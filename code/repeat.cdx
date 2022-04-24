@@ -1,0 +1,11 @@
+let s = 0
+
+repeat {
+    s += 5
+
+    if (s == 100) {
+        break
+    }
+}
+
+return s

@@ -1,0 +1,10 @@
+let a = 5
+
+if a <= 10 {
+    return 'a is less than or equal to 10'
+}
+else {
+    return 'a is greater than 10'
+}
+
+return a

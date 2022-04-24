@@ -8,7 +8,7 @@ enum TokenType {
 
         TRUE = "true",
         FALSE = "false",
-
+        STEP = "step",
     // Multi-character tokens.
 
         AND = "&&",
@@ -67,7 +67,8 @@ enum TokenType {
         FOR = "for",
         TO = "to",
         DOWNTO = "downto",
-
+        REPEAT = "repeat",
+        
         BREAK = "break",
         CONTINUE = "continue",
 
@@ -77,7 +78,7 @@ enum TokenType {
         LET = "let",
         CONST = "const",
 
-        
+        ERROR = 'error',
 }
 
 export default TokenType;

@@ -42,8 +42,6 @@ export class Source {
     peek(relative: number): string {
         let position = this.position + relative
         if (position < 0 || position >= this.length) {
-            console.log( `out side source` );
-            console.log(this.end());
             return '\u0000'
         }
         return this.source.charAt(position)

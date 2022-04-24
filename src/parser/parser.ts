@@ -1,6 +1,7 @@
 import ExprStatement from "./ast/statement/expr.statement";
 import { TokenType, Token } from "./lexer";
-import { Statement, Expression } from "./node";
+import { Statement, Expression, Accessible } from "./node";
+
 import { 
     ArrayAccessExpression,
     BinaryExpression,
@@ -13,9 +14,32 @@ import {
     UnaryExpression,
     VariableExpression,
     ArrayExpression,
-    BooleanExpression
+    BooleanExpression,
+    ConditionExpression
   } from './ast/expression'
 
+import { 
+    AssignmentStatement, 
+    Block,
+    BreakStatement, 
+    ContinueStatement, 
+    ErrorStatement, 
+    ForStatement, 
+    IfElseStatement, 
+    RepeatStatement, 
+    ReturnStatement, 
+    VarDeclarationStatement 
+} from "./ast/statement";
+import Program from "./ast/program";
+
+const assignmentOperators = [
+    TokenType.ASSIGN,
+    TokenType.PLUS_EQ,
+    TokenType.MINUS_EQ,
+    TokenType.MUL_EQ,
+    TokenType.DIV_EQ,
+    TokenType.MOD_EQ
+]
 
 export default class Parser {
 
@@ -26,8 +50,121 @@ export default class Parser {
         this.size = tokens.length
     }
 
-    parse() : Statement {
-        return new ExprStatement(this.expression())
+    parse() : Program {
+        let statements: Statement[] = []
+
+        while(true) {
+            try {
+                statements.push(this.statement())
+            }
+            catch (e) {
+                if (e instanceof EOF) {
+                    break
+                }
+                else {
+                    throw e
+                }
+            }
+        }
+        return new Program(statements)
+    }
+
+    private statement(): Statement {
+        if (this.match(TokenType.LET)) {
+            return this.varDeclaration({ isConst: false })
+        }
+        if (this.match(TokenType.CONST)) {
+            return this.varDeclaration({ isConst: true })
+        }
+        if (this.match(TokenType.REPEAT)) {
+            return this.repeat()
+        }
+        if (this.match(TokenType.FOR)) {
+            return this.forLoop()
+        }
+        if (this.match(TokenType.IF)) {
+            return this.ifElse()
+        }
+        if (this.match(TokenType.RETURN)) {
+            return new ReturnStatement(this.expression())
+        }
+        if (this.match(TokenType.ERROR)) {
+            return new ErrorStatement(this.expression())
+        }
+        if (this.match(TokenType.BREAK)) {
+            return new BreakStatement(this.last())
+        }
+        if (this.match(TokenType.CONTINUE)) {
+            return new ContinueStatement(this.last())
+        }
+
+        let variable = this.expression()
+        
+        if (this.hasNext(0)) {
+            let current = this.current()
+
+            if (assignmentOperators.includes(current.type)) {
+
+                if (variable instanceof Accessible) {
+                    this.consume(current.type)
+                    return new AssignmentStatement(variable, this.expression(), current.type)
+                }
+                else {
+                    throw new Error(`Cannot assign to ${variable}`)
+                }
+            }
+        }
+        return new ExprStatement(variable)
+    }
+
+    private varDeclaration(options: { isConst: boolean }): Statement {
+        let identifier = this.consume(TokenType.IDENTIFIER)
+        this.consume(TokenType.ASSIGN)
+        let value = this.expression()
+        return new VarDeclarationStatement(identifier, value, options.isConst)
+    }
+
+    private repeat(): Statement {
+        
+        let count: Expression | undefined
+        if (this.match(TokenType.LPAREN)) {
+            count = this.expressionInParen()
+        }
+        let block = this.statementOrBlock()
+        return new RepeatStatement(count, block)
+    }
+
+    private forLoop(): Statement {
+        let variable = this.consume(TokenType.IDENTIFIER)
+        this.consume(TokenType.ASSIGN)
+        let start = this.expression()
+        this.consume(TokenType.TO)
+        let end = this.expression()
+        let step = this.match(TokenType.STEP) ? this.expression() : undefined
+        let block = this.statementOrBlock()
+        return new ForStatement(variable, start, end, step, block)
+    }
+
+    private ifElse(): Statement {
+        let condition = new ConditionExpression(this.expression())
+        let trueBlock = this.statementOrBlock()
+
+        return this.match(TokenType.ELSE) 
+            ? new IfElseStatement(condition, trueBlock, this.statementOrBlock()) 
+            : new IfElseStatement(condition, trueBlock)
+    }
+
+    private statementOrBlock(): Statement {
+        return (this.lookMatch(0, TokenType.LBRACE)) ? this.block() : this.statement()
+    }
+
+    private block(): Block {
+        let statements: Statement[] = []
+        this.consume(TokenType.LBRACE)
+        while (!this.match(TokenType.RBRACE)) {
+            statements.push(this.statement())
+        } 
+        return new Block(statements)
     }
 
     private expression(): Expression {
@@ -89,19 +226,19 @@ export default class Parser {
         let result = this.additive()
         while(true) {
             if (this.match(TokenType.LT)) {
-                result = new BinaryExpression(result, this.additive(), TokenType.LT)
+                result = new ConditionalExpression(result, this.additive(), TokenType.LT)
                 continue
             }
             if (this.match(TokenType.GT)) {
-                result = new BinaryExpression(result, this.additive(), TokenType.GT)
+                result = new ConditionalExpression(result, this.additive(), TokenType.GT)
                 continue
             }
             if (this.match(TokenType.LEQ)) {
-                result = new BinaryExpression(result, this.additive(), TokenType.LEQ)
+                result = new ConditionalExpression(result, this.additive(), TokenType.LEQ)
                 continue
             }
             if (this.match(TokenType.GEQ)) {
-                result = new BinaryExpression(result, this.additive(), TokenType.GEQ)
+                result = new ConditionalExpression(result, this.additive(), TokenType.GEQ)
                 continue
             }
             break
@@ -197,24 +334,24 @@ export default class Parser {
 
         while (true) {
                 if (this.lookMatch(0, TokenType.LPAREN)) {
-                    return new InvokeExpression(result, this.functionArgs())
+                    result = new InvokeExpression(result, this.functionArgs())
                 }
                 if (this.match(TokenType.DOT) && result instanceof VariableExpression) {
                     // UnknownWordsExpression(mutableListOf(consume(WORD)))
                 }
                 if (this.match(TokenType.DOT)) {
-                    return new FieldAccessExpression(result, this.consume(TokenType.IDENTIFIER))
+                    result = new  FieldAccessExpression(result, this.consume(TokenType.IDENTIFIER))
                 }
                 if (this.match(TokenType.LBRACKET)) {
                     let index = this.expression()
                     this.consume(TokenType.RBRACKET)
-                    return new ArrayAccessExpression(result, index)
+                    result = new ArrayAccessExpression(result, index)
                 }
                 if (this.match(TokenType.INCREMENT)) {
-                    return new UnaryExpression(result, TokenType.INCREMENT)
+                    result = new UnaryExpression(result, TokenType.INCREMENT)
                 }
                 if (this.match(TokenType.DECREMENT)) {
-                    return new UnaryExpression(result, TokenType.DECREMENT)
+                    result = new UnaryExpression(result, TokenType.DECREMENT)
                 }
                 else {
                     break
@@ -226,7 +363,7 @@ export default class Parser {
     private variable(): Expression {
         let current = this.current()
         if (this.match(TokenType.IDENTIFIER)) {
-            return new VariableExpression(current)
+            return this.variableSuffix(new VariableExpression(current)) 
         }
         return this.value()
     }
@@ -299,11 +436,25 @@ export default class Parser {
         return this.get(relativePos).type === type
     }
 
+    private hasNext(relativePos: number): boolean {
+        let position = this.pos + relativePos
+        if (position < 0 || position >= this.size) {
+            return false
+        }
+        return true
+    }
+
     private get(relativePos: number): Token {
         let position = this.pos + relativePos
         if (position < 0 || position >= this.size) {
-            throw new Error(`Out of bounds: ${position}`)
+            throw new EOF()
         }
         return this.tokens[position]
+    }
+}
+
+class EOF extends Error {
+    constructor() {
+        super('Unexpected end of file')
     }
 }

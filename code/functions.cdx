@@ -1,0 +1,2 @@
+print('HelloApp')
+return 'My Functions: ' + multiply(2, 3)
