@@ -1,10 +1,10 @@
-import { Context } from "../../../runtime";
+import { Context, typeOf } from "../../../runtime";
 import { Token } from "../../lexer";
 import { Expression, Statement, Visitor } from "../../node";
 
 export default class VarDeclarationStatement implements Statement {
 
-    constructor(private variable: Token, private value: Expression, private isConst: boolean) {}
+    constructor(private variable: Token, private type: Token, private value: Expression, private isConst: boolean) {}
 
     execute(context: Context): void {
         let name = this.variable.text;
@@ -12,7 +12,13 @@ export default class VarDeclarationStatement implements Statement {
             throw new Error(`Variable ${name} is already defined`);
         }
         let value = this.value.execute(context);
-        context.declare(name, value, this.isConst);
+        let type = typeOf(this.type.text);
+
+        if (value.type !== type) { 
+            throw new Error(`Type of variable ${name} is ${value.type}, but ${type} is expected`);
+        }
+        
+        context.declare(name, value, type, this.isConst);
     }
 
     visit(visitor: Visitor): void {

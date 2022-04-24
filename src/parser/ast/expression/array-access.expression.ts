@@ -1,6 +1,5 @@
-import { Context, Types, Value } from "../../../runtime"
+import { ArrayValue, Context, Types, Value } from "../../../runtime"
 import { Expression, Visitor } from "../../node"
-
 
 export default class ArrayAccessExpression implements Expression {
     constructor(
@@ -10,9 +9,9 @@ export default class ArrayAccessExpression implements Expression {
 
     execute(context: Context): Value {
         let array = this.target.execute(context)
-        if (array.type === Types.Array) {
+        if (array.type === Types.Array && array instanceof ArrayValue) {
             let index = this.index.execute(context).value
-            return array.value[index]
+            return array.get(index)
         }
         else {
             throw new Error(`Cannot apply array access to ${array.type}`)

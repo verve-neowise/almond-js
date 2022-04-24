@@ -1,2 +1,7 @@
 print('HelloApp')
-return 'My Functions: ' + multiply(2, 3)
+
+multiply = print
+
+let mult: string = 'mult' + multiply(2, 3)
+
+return mult

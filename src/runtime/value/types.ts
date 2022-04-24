@@ -1,4 +1,5 @@
 enum Types {
+
     Null = 'null',
     Boolean = 'boolean',
     Number = 'number',

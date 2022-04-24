@@ -1,7 +1,7 @@
 import { VarDeclarationStatement } from ".";
 import { Context, Types, Value } from "../../../runtime";
 import { BreakError, ContinueError } from "../../errors";
-import { Token } from "../../lexer";
+import { Token, TokenType } from "../../lexer";
 import { Expression, Statement, Visitor } from "../../node";
 import { VariableExpression } from "../expression";
 
@@ -17,7 +17,7 @@ export default class ForStatement implements Statement {
 
     execute(context: Context): void {
         let variable = new VariableExpression(this.variable);
-        new VarDeclarationStatement(this.variable, this.start, false).execute(context);
+        new VarDeclarationStatement(this.variable, new Token('number', TokenType.NUMBER), this.start, false).execute(context);
 
         while (true) {
             let value = variable.get(context).value;

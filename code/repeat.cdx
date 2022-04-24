@@ -1,4 +1,4 @@
-let s = 0
+let s: number = 0
 
 repeat {
     s += 5

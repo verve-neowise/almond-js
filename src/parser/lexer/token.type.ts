@@ -6,6 +6,16 @@ enum TokenType {
         IDENTIFIER = "<IDENTIFIER>",
         EOF = "<EOF>",
 
+    // types
+
+        NULL_TYPE = "null",
+        BOOLEAN_TYPE = "boolean",
+        NUMBER_TYPE = "number",
+        STRING_TYPE = "string",
+        FUNCTION_TYPE = "function",
+        OBJECT_TYPE = "object",
+        ARRAY_TYPE = "array",
+
         TRUE = "true",
         FALSE = "false",
         STEP = "step",

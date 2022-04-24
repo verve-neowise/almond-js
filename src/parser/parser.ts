@@ -41,6 +41,16 @@ const assignmentOperators = [
     TokenType.MOD_EQ
 ]
 
+const types = [
+    TokenType.NULL_TYPE,
+    TokenType.BOOLEAN_TYPE,
+    TokenType.NUMBER_TYPE,
+    TokenType.STRING_TYPE,
+    TokenType.FUNCTION_TYPE,
+    TokenType.OBJECT_TYPE,
+    TokenType.ARRAY_TYPE
+]
+
 export default class Parser {
 
     private pos = 0
@@ -119,9 +129,16 @@ export default class Parser {
 
     private varDeclaration(options: { isConst: boolean }): Statement {
         let identifier = this.consume(TokenType.IDENTIFIER)
+        this.consume(TokenType.COLON)
+        let current = this.current()
+        if (!types.includes(current.type)) {
+            throw new Error(`Expected type, got ${current.type}`)
+        }
+        this.consume(current.type)
+        let type = current
         this.consume(TokenType.ASSIGN)
         let value = this.expression()
-        return new VarDeclarationStatement(identifier, value, options.isConst)
+        return new VarDeclarationStatement(identifier, type, value, options.isConst)
     }
 
     private repeat(): Statement {
@@ -168,7 +185,7 @@ export default class Parser {
     }
 
     private expression(): Expression {
-        return this.ternary()
+        return this.variableSuffix(this.ternary())
     }
 
     private ternary(): Expression {
@@ -300,10 +317,10 @@ export default class Parser {
 
     private primary(): Expression {
         if (this.match(TokenType.LPAREN)) {
-            return this.variableSuffix(this.expressionInParen())
+            return this.expressionInParen()
         }
         if (this.match(TokenType.LBRACKET)) {
-            return this.variableSuffix(this.array())
+            return this.array()
         }
         else {
             return this.variable()

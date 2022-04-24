@@ -21,8 +21,16 @@ export default class VariableExpression extends Accessible implements Expression
     }
     
     public set(context: Context, value: Value): void {
+        
         if (!context.isExists(this.name.text)) {
             throw new Error(`Variable ${this.name.text} is not defined`)
+        }
+        if (context.isConst(this.name.text)) {
+            throw new Error(`Variable ${this.name.text} is constant`)
+        }
+        let type = context.typeOf(this.name.text)
+        if (value.type !== type) {
+            throw new Error(`Type of variable ${this.name.text} is ${value.type}, but ${type} is expected`)
         }
         context.set(this.name.text, value)
     }

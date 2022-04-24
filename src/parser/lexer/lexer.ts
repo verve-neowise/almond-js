@@ -28,6 +28,10 @@ const keywords = [
     TokenType.RETURN, TokenType.REPEAT,
     TokenType.LET, TokenType.CONST,
     TokenType.TRUE, TokenType.FALSE,
+
+    TokenType.NUMBER_TYPE, TokenType.STRING_TYPE, TokenType.BOOLEAN_TYPE,
+    TokenType.ARRAY_TYPE, TokenType.FUNCTION_TYPE, TokenType.NULL_TYPE,
+    TokenType.OBJECT_TYPE
 ]
 
 function isDigit(char: string): boolean {
