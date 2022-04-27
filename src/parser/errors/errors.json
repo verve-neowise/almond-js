@@ -1,0 +1,46 @@
+{
+    "P-1001": {
+        "message": "Cannot assign to not accessible expression"
+    },
+    "P-1002": {
+        "message": "Expected type, got {0}"
+    },
+    "P-1003": {
+        "message": "Expected value, got {0}"
+    },
+    "P-1004": {
+        "message": "Expected {0}"
+    },
+
+    "L-2010": {
+        "message": "Illegal character '{0}'"
+    },
+    "L-2011": {
+        "message": "Illegal number format"
+    },
+    "L-2012": {
+        "message": "unterminated string"
+    },
+    "L-2013": {
+        "message": "illegal escape sequence"
+    },
+
+    "R-3001" : {
+        "message": "Cannot apply array access to {0}"
+    },
+    "R-3002" : {
+        "message": "Cannot apply member access to {0}"
+    },
+    "R-3003": {
+        "message": "Unknown operator {0}"
+    },
+    "R-3004": {
+        "message": "Condition expression must be boolean, but got {0}"
+    },
+    "R-3005": {
+        "message": "Unknown operator {0}"
+    },
+    "R-3006": {
+        "message": "Cannot access field {0} of {1}"
+    }
+}

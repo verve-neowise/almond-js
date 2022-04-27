@@ -21,6 +21,6 @@ export default class ArrayValue extends Value {
     }
 
     get value() {
-        return this.elements.map(element => element.value());
+        return this.elements.map(element => element.value);
     }
 }

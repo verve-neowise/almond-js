@@ -31,6 +31,7 @@ import {
     VarDeclarationStatement 
 } from "./ast/statement";
 import Program from "./ast/program";
+import { ParseError } from "./errors";
 
 const assignmentOperators = [
     TokenType.ASSIGN,
@@ -117,10 +118,11 @@ export default class Parser {
 
                 if (variable instanceof Accessible) {
                     this.consume(current.type)
-                    return new AssignmentStatement(variable, this.expression(), current.type)
+                    return new AssignmentStatement(variable, this.expression(), current)
                 }
                 else {
-                    throw new Error(`Cannot assign to ${variable}`)
+                    console.dir(variable)
+                    throw new ParseError('P-1001', current)
                 }
             }
         }
@@ -132,7 +134,7 @@ export default class Parser {
         this.consume(TokenType.COLON)
         let current = this.current()
         if (!types.includes(current.type)) {
-            throw new Error(`Expected type, got ${current.type}`)
+            throw new ParseError('P-1002', current, [current.type])
         }
         this.consume(current.type)
         let type = current
@@ -350,30 +352,31 @@ export default class Parser {
         var result: Expression = expression
 
         while (true) {
-                if (this.lookMatch(0, TokenType.LPAREN)) {
-                    result = new InvokeExpression(result, this.functionArgs())
-                }
-                if (this.match(TokenType.DOT) && result instanceof VariableExpression) {
-                    // UnknownWordsExpression(mutableListOf(consume(WORD)))
-                }
-                if (this.match(TokenType.DOT)) {
-                    result = new  FieldAccessExpression(result, this.consume(TokenType.IDENTIFIER))
-                }
-                if (this.match(TokenType.LBRACKET)) {
-                    let index = this.expression()
-                    this.consume(TokenType.RBRACKET)
-                    result = new ArrayAccessExpression(result, index)
-                }
-                if (this.match(TokenType.INCREMENT)) {
-                    result = new UnaryExpression(result, TokenType.INCREMENT)
-                }
-                if (this.match(TokenType.DECREMENT)) {
-                    result = new UnaryExpression(result, TokenType.DECREMENT)
-                }
-                else {
-                    break
-                }
+            let current = this.current()
+            if (this.lookMatch(0, TokenType.LPAREN)) {
+                result = new InvokeExpression(result, this.functionArgs())
             }
+            if (this.match(TokenType.DOT) && result instanceof VariableExpression) {
+                // UnknownWordsExpression(mutableListOf(consume(WORD)))
+            }
+            if (this.match(TokenType.DOT)) {
+                result = new  FieldAccessExpression(result, this.consume(TokenType.IDENTIFIER))
+            }
+            if (this.match(TokenType.LBRACKET)) {
+                let index = this.expression()
+                this.consume(TokenType.RBRACKET)
+                result = new ArrayAccessExpression(result, index, current)
+            }
+            if (this.match(TokenType.INCREMENT)) {
+                result = new UnaryExpression(result, TokenType.INCREMENT)
+            }
+            if (this.match(TokenType.DECREMENT)) {
+                result = new UnaryExpression(result, TokenType.DECREMENT)
+            }
+            else {
+                break
+            }
+        }
         return result
     }
 
@@ -409,7 +412,7 @@ export default class Parser {
         if (this.match(TokenType.STRING)) {
             return new StringExpression(current)
         }
-        throw new Error(`Expected value, got ${current.type}`)
+        throw new ParseError('P-1003', current, [current.type])
     }
 
     private last(): Token {
@@ -430,7 +433,7 @@ export default class Parser {
             this.pos++
             return current
         }
-        throw new Error(`Expected ${type}`)
+        throw new ParseError('P-1004', current, [type])
     }
 
     private match(type: TokenType): boolean {

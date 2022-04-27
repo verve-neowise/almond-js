@@ -1,5 +1,5 @@
 import { Context, Arithmetics, Value } from "../../../runtime";
-import { TokenType } from "../../lexer";
+import { Token, TokenType } from "../../lexer";
 import { Accessible, Expression, Statement, Visitor } from "../../node";
 
 const { plus, minus, multiply, divide, modulo, power } = Arithmetics;
@@ -9,7 +9,7 @@ export default class AssignmentStatement implements Statement {
     constructor(
         private target: Accessible,
         private value: Expression,
-        private operator: TokenType
+        private operator: Token
     ) {}
 
     execute(context: Context): void {
@@ -17,7 +17,7 @@ export default class AssignmentStatement implements Statement {
         const value = this.value.execute(context);
         let result: Value
 
-        switch (this.operator) {
+        switch (this.operator.type) {
             case TokenType.ASSIGN:
                 result = value;
                 break;

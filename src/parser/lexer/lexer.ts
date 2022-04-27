@@ -1,3 +1,4 @@
+import { LexerError, ParseError } from "../errors"
 import { Source } from "./source/source"
 import Token from "./token"
 import TokenType from "./token.type"
@@ -87,7 +88,7 @@ export default class Lexer {
                 break
             }
             else {
-                throw new Error(`illegal character '${char}' at ` + this.source.positionToString())
+                throw new LexerError('L-2010', this.source.row, this.source.column, [char])
             }
         }
         return this.tokens
@@ -103,7 +104,7 @@ export default class Lexer {
 
 
             if (current === '.' && this.buffer.includes('.')) {
-                throw new Error("illegal number format at " + this.source.positionToString())
+                throw new LexerError('L-2011', this.source.row, this.source.column)
             }
             else if (!isDigit(current)) {
                 break
@@ -144,7 +145,7 @@ export default class Lexer {
 
         while(true) {
             if (current === '\u0000') {
-                throw new Error("unterminated string at " + this.source.positionToString())
+                throw new LexerError('L-2012', this.source.row, this.source.column)
             }
             if (current === '\\') {
                 this.source.next()
@@ -155,7 +156,7 @@ export default class Lexer {
                     this.buffer.push(current)
                 }
                 else {
-                    throw new Error("illegal escape sequence at " + this.source.positionToString())
+                    throw new LexerError('L-2013', this.source.row, this.source.column, [current])
                 }
                 this.buffer.push('\\')
                 continue

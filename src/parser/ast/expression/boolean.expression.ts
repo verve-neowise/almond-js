@@ -6,6 +6,10 @@ export default class BooleanExpression implements Expression {
 
     constructor(public value: Token) {}
     
+    get token(): Token {
+        return this.value;
+    }
+
     visit(visitor: Visitor): void {
         visitor.visit(this);
     }

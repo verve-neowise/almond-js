@@ -1,19 +1,24 @@
 import { Context, Types, Value } from "../../../runtime"
 import { Expression, Visitor } from "../../node"
-import { TokenType } from "../../lexer";
+import { Token, TokenType } from "../../lexer";
+import { RuntimeError } from "../../errors";
 
 export default class ConditionalExpression implements Expression {
     constructor(
         public left: Expression,
         public right: Expression,
-        public operator: TokenType
+        public operator: Token
     ) {}
+
+    get token(): Token {
+        return this.operator;
+    }
 
     execute(context: Context): Value {
         let leftValue = this.left.execute(context).value;
         let rightValue = this.right.execute(context).value;
 
-        switch (this.operator) {
+        switch (this.operator.type) {
             case TokenType.LT:
                 return new Value(leftValue < rightValue, Types.Boolean);
             case TokenType.LEQ:
@@ -27,7 +32,7 @@ export default class ConditionalExpression implements Expression {
             case TokenType.NEQ:
                 return new Value(leftValue !== rightValue, Types.Boolean);
             default:
-                throw new Error(`Unknown operator ${this.operator}`);
+                throw new RuntimeError('R-3005', this.operator, [this.operator.type]);
         }
     }
 

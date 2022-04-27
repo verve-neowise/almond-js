@@ -1,4 +1,5 @@
 import { Context, Value, Types } from "../../../runtime"
+import { RuntimeError } from "../../errors"
 import { Token } from "../../lexer"
 import { Visitor, Expression } from "../../node"
 
@@ -8,6 +9,10 @@ export default class FieldAccessExpression implements Expression {
         private field: Token,
     ) { }
 
+    get token(): Token {
+        return this.field
+    }
+
     execute(context: Context): Value {
         let object = this.target.execute(context)
         if (object.type === Types.Object) {
@@ -16,7 +21,7 @@ export default class FieldAccessExpression implements Expression {
             return value
         }
         else {
-            throw new Error(`Cannot access field ${this.field.text} of ${object.type}`)
+            throw new RuntimeError('R-3006', this.token, [this.field.text, object.type])
         }
     }
 
