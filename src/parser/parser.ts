@@ -32,6 +32,8 @@ import {
 } from "./ast/statement";
 import Program from "./ast/program";
 import { ParseError } from "./errors";
+import { Position } from "./position";
+import NamedBlock from "./ast/statement/named.block";
 
 const assignmentOperators = [
     TokenType.ASSIGN,
@@ -80,7 +82,14 @@ export default class Parser {
         return new Program(statements)
     }
 
+    private positionOf(first: Token, second?: Token): Position {
+        return new Position(first, second ? second : first)
+    }
+
     private statement(): Statement {
+
+        let current = this.current()
+
         if (this.match(TokenType.LET)) {
             return this.varDeclaration({ isConst: false })
         }
@@ -97,16 +106,18 @@ export default class Parser {
             return this.ifElse()
         }
         if (this.match(TokenType.RETURN)) {
-            return new ReturnStatement(this.expression())
+            let expression = this.expression()
+            return new ReturnStatement(expression, this.positionOf(current))
         }
         if (this.match(TokenType.ERROR)) {
-            return new ErrorStatement(this.expression())
+            let expression = this.expression()
+            return new ErrorStatement(this.expression(), this.positionOf(current))
         }
         if (this.match(TokenType.BREAK)) {
-            return new BreakStatement(this.last())
+            return new BreakStatement(current, this.positionOf(current))
         }
         if (this.match(TokenType.CONTINUE)) {
-            return new ContinueStatement(this.last())
+            return new ContinueStatement(current, this.positionOf(current))
         }
 
         let variable = this.expression()
@@ -118,7 +129,7 @@ export default class Parser {
 
                 if (variable instanceof Accessible) {
                     this.consume(current.type)
-                    return new AssignmentStatement(variable, this.expression(), current)
+                    return new AssignmentStatement(variable, this.expression(), current, this.positionOf(current))
                 }
                 else {
                     console.dir(variable)
@@ -140,37 +151,43 @@ export default class Parser {
         let type = current
         this.consume(TokenType.ASSIGN)
         let value = this.expression()
-        return new VarDeclarationStatement(identifier, type, value, options.isConst)
+        return new VarDeclarationStatement(identifier, type, value, options.isConst, this.positionOf(identifier, type))
     }
 
     private repeat(): Statement {
-        
+        let position = this.positionOf(this.current())
         let count: Expression | undefined
         if (this.match(TokenType.LPAREN)) {
             count = this.expressionInParen()
         }
         let block = this.statementOrBlock()
-        return new RepeatStatement(count, block)
+        return new RepeatStatement(count, block, position)
     }
 
     private forLoop(): Statement {
+        let token = this.current()
         let variable = this.consume(TokenType.IDENTIFIER)
         this.consume(TokenType.ASSIGN)
         let start = this.expression()
+        let varDeclaration = new VarDeclarationStatement(variable, new Token('', TokenType.NUMBER), start, false, this.positionOf(variable))
         this.consume(TokenType.TO)
         let end = this.expression()
         let step = this.match(TokenType.STEP) ? this.expression() : undefined
         let block = this.statementOrBlock()
-        return new ForStatement(variable, start, end, step, block)
+        return new ForStatement(varDeclaration, start, end, step, block, this.positionOf(token))
     }
 
     private ifElse(): Statement {
+        let token = this.current()
+
         let condition = new ConditionExpression(this.expression())
         let trueBlock = this.statementOrBlock()
+        
+        let current = this.current()
+        let elseBlock = 
+            this.match(TokenType.ELSE) ? new NamedBlock(this.statementOrBlock(), current) : undefined
 
-        return this.match(TokenType.ELSE) 
-            ? new IfElseStatement(condition, trueBlock, this.statementOrBlock()) 
-            : new IfElseStatement(condition, trueBlock)
+        return new IfElseStatement(condition, trueBlock, elseBlock, this.positionOf(token))
     }
 
     private statementOrBlock(): Statement {
@@ -179,11 +196,12 @@ export default class Parser {
 
     private block(): Block {
         let statements: Statement[] = []
-        this.consume(TokenType.LBRACE)
-        while (!this.match(TokenType.RBRACE)) {
+        let start = this.consume(TokenType.LBRACE)
+        while (!this.lookMatch(0, TokenType.RBRACE)) {
             statements.push(this.statement())
         } 
-        return new Block(statements)
+        let end = this.consume(TokenType.RBRACE)
+        return new Block(statements, this.positionOf(start, end))
     }
 
     private expression(): Expression {
@@ -195,11 +213,14 @@ export default class Parser {
 
         if (this.match(TokenType.QUESTION)) {
 
+            let start = this.last()
+
             let trueExpr = this.expression()
-            this.consume(TokenType.COLON)
+            let end = this.consume(TokenType.COLON)
             let falseExpr = this.expression()
 
-            return new TernaryExpression(result, trueExpr, falseExpr)
+
+            return new TernaryExpression(result, trueExpr, falseExpr, new Position(start, end))
         }
         return result
     }
@@ -208,7 +229,7 @@ export default class Parser {
         let result = this.logicalAnd()
         while (true) {
             if (this.match(TokenType.OR)) {
-                result = new BinaryExpression(result, this.logicalAnd(), TokenType.OR)
+                result = new BinaryExpression(result, this.logicalAnd(), this.last())
                 continue
             }
             break
@@ -220,7 +241,7 @@ export default class Parser {
         var result = this.equality()
         while (true) {
             if (this.match(TokenType.AND)) {
-                result = new BinaryExpression(result, this.equality(), TokenType.AND)
+                result = new BinaryExpression(result, this.equality(), this.last())
                 continue
             }
             break
@@ -232,11 +253,8 @@ export default class Parser {
 
         let result = this.conditional()
 
-        if (this.match(TokenType.EQ)) {
-            return new ConditionalExpression(result, this.conditional(), TokenType.EQ)
-        }
-        else if (this.match(TokenType.NEQ)) {
-            return new ConditionalExpression(result, this.conditional(), TokenType.NEQ)
+        if (this.match(TokenType.EQ) || this.match(TokenType.NEQ)) {
+            return new ConditionalExpression(result, this.conditional(), this.last())
         }
         else return result
     }
@@ -244,20 +262,8 @@ export default class Parser {
     private conditional(): Expression {
         let result = this.additive()
         while(true) {
-            if (this.match(TokenType.LT)) {
-                result = new ConditionalExpression(result, this.additive(), TokenType.LT)
-                continue
-            }
-            if (this.match(TokenType.GT)) {
-                result = new ConditionalExpression(result, this.additive(), TokenType.GT)
-                continue
-            }
-            if (this.match(TokenType.LEQ)) {
-                result = new ConditionalExpression(result, this.additive(), TokenType.LEQ)
-                continue
-            }
-            if (this.match(TokenType.GEQ)) {
-                result = new ConditionalExpression(result, this.additive(), TokenType.GEQ)
+            if (this.match(TokenType.LT) || this.match(TokenType.GT) || this.match(TokenType.LEQ) || this.match(TokenType.GEQ)) {
+                result = new ConditionalExpression(result, this.additive(), this.last())
                 continue
             }
             break
@@ -269,12 +275,8 @@ export default class Parser {
         let result = this.multiplicative()
 
         while (true) {
-            if (this.match(TokenType.PLUS)) {
-                result = new BinaryExpression(result, this.multiplicative(), TokenType.PLUS)
-                continue
-            }
-            if (this.match(TokenType.MINUS)) {
-                result = new BinaryExpression(result, this.multiplicative(), TokenType.MINUS)
+            if (this.match(TokenType.PLUS) || this.match(TokenType.MINUS)) {
+                result = new BinaryExpression(result, this.multiplicative(), this.last())
                 continue
             }
             break
@@ -285,16 +287,8 @@ export default class Parser {
     private multiplicative(): Expression {
         let result = this.unary()
         while (true) {
-            if (this.match(TokenType.MUL)) {
-                result = new BinaryExpression(result, this.unary(), TokenType.MUL)
-                continue
-            }
-            if (this.match(TokenType.DIV)) {
-                result = new BinaryExpression(result, this.unary(), TokenType.DIV)
-                continue
-            }
-            if (this.match(TokenType.MOD)) {
-                result = new BinaryExpression(result, this.unary(), TokenType.MOD)
+            if (this.match(TokenType.MUL) || this.match(TokenType.DIV) || this.match(TokenType.MOD)) {
+                result = new BinaryExpression(result, this.unary(), this.last())
                 continue
             }
             break
@@ -303,14 +297,8 @@ export default class Parser {
     }
 
     private unary(): Expression {
-        if (this.match(TokenType.MINUS)) {
-            return new UnaryExpression(this.primary(), TokenType.MINUS)
-        }
-        if (this.match(TokenType.NOT)) {
-            return new UnaryExpression(this.primary(), TokenType.NOT)
-        }
-        if (this.match(TokenType.PLUS)) {
-            return this.primary()
+        if (this.match(TokenType.MINUS) || this.match(TokenType.NOT)) {
+            return new UnaryExpression(this.primary(), this.last())
         }
         else {
             return this.primary()
@@ -337,6 +325,7 @@ export default class Parser {
 
     private array(): Expression {
         let elements: Expression[] = []
+        let start = this.last()
         if (!this.match(TokenType.RBRACKET)) {
             while (true) {
                 elements.push(this.expression())
@@ -345,7 +334,8 @@ export default class Parser {
                 this.consume(TokenType.COMMA)
             }
         }
-        return new ArrayExpression(elements)
+        let end = this.last()
+        return new ArrayExpression(elements, new Position(start, end))
     }
 
     private variableSuffix(expression: Expression): Expression {
@@ -354,24 +344,26 @@ export default class Parser {
         while (true) {
             let current = this.current()
             if (this.lookMatch(0, TokenType.LPAREN)) {
-                result = new InvokeExpression(result, this.functionArgs())
+                let start = this.current()
+                let args = this.functionArgs()
+                let end = this.last()
+                result = new InvokeExpression(result, args, new Position(start, end))
             }
             if (this.match(TokenType.DOT) && result instanceof VariableExpression) {
                 // UnknownWordsExpression(mutableListOf(consume(WORD)))
             }
             if (this.match(TokenType.DOT)) {
-                result = new  FieldAccessExpression(result, this.consume(TokenType.IDENTIFIER))
+                let field = this.consume(TokenType.IDENTIFIER)
+                result = new  FieldAccessExpression(result, field)
             }
             if (this.match(TokenType.LBRACKET)) {
+                let start = this.last()
                 let index = this.expression()
-                this.consume(TokenType.RBRACKET)
-                result = new ArrayAccessExpression(result, index, current)
+                let end = this.consume(TokenType.RBRACKET)
+                result = new ArrayAccessExpression(result, index, new Position(start, end))
             }
-            if (this.match(TokenType.INCREMENT)) {
-                result = new UnaryExpression(result, TokenType.INCREMENT)
-            }
-            if (this.match(TokenType.DECREMENT)) {
-                result = new UnaryExpression(result, TokenType.DECREMENT)
+            if (this.match(TokenType.INCREMENT) || this.match(TokenType.DECREMENT)) {
+                result = new UnaryExpression(result, this.last())
             }
             else {
                 break
@@ -404,13 +396,13 @@ export default class Parser {
     private value(): Expression {
         let current = this.current()
         if (this.match(TokenType.NUMBER)) {
-            return new NumberExpression(current)
+            return new NumberExpression(current, this.positionOf(current))
         }
         if (this.match(TokenType.TRUE) || this.match(TokenType.FALSE)) {
-            return new BooleanExpression(current)
+            return new BooleanExpression(current, this.positionOf(current))
         }
         if (this.match(TokenType.STRING)) {
-            return new StringExpression(current)
+            return new StringExpression(current, this.positionOf(current))
         }
         throw new ParseError('P-1003', current, [current.type])
     }

@@ -1,10 +1,17 @@
 import { Context, typeOf } from "../../../runtime";
 import { Token } from "../../lexer";
 import { Expression, Statement, Visitor } from "../../node";
+import { Position } from "../../position";
 
 export default class VarDeclarationStatement implements Statement {
 
-    constructor(private variable: Token, private type: Token, private value: Expression, private isConst: boolean) {}
+    constructor(
+        public variable: Token,
+        private type: Token,
+        private value: Expression,
+        private isConst: boolean,
+        public readonly position: Position
+    ) {}
 
     execute(context: Context): void {
         let name = this.variable.text;

@@ -1,4 +1,5 @@
 import { Token } from "../lexer";
+import { Position } from "../position";
 import errors from './errors.json'
 
 export class BaseError extends Error {
@@ -13,7 +14,7 @@ export class BaseError extends Error {
 export class RuntimeError extends BaseError {
     constructor(
         public code: keyof typeof errors,
-        public token: Token,
+        public position: Position,
         public args: any[] = []
     ) {
         super(code, args)

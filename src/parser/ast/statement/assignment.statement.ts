@@ -1,6 +1,7 @@
 import { Context, Arithmetics, Value } from "../../../runtime";
 import { Token, TokenType } from "../../lexer";
 import { Accessible, Expression, Statement, Visitor } from "../../node";
+import { Position } from "../../position";
 
 const { plus, minus, multiply, divide, modulo, power } = Arithmetics;
 
@@ -9,7 +10,8 @@ export default class AssignmentStatement implements Statement {
     constructor(
         private target: Accessible,
         private value: Expression,
-        private operator: Token
+        private operator: Token,
+        public readonly position: Position
     ) {}
 
     execute(context: Context): void {

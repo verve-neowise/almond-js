@@ -2,12 +2,13 @@ import { ArrayValue, Context, Types, Value } from "../../../runtime"
 import { RuntimeError } from "../../errors"
 import { Token } from "../../lexer"
 import { Accessible, Expression, Visitor } from "../../node"
+import { Position } from "../../position"
 
 export default class ArrayAccessExpression extends Accessible implements Expression {
     constructor(
         private target: Expression,
         private index: Expression,
-        public readonly token: Token
+        public readonly position: Position
     ) {
         super()
      }

@@ -1,5 +1,6 @@
 import { Context } from "../../../runtime";
 import { Expression, Statement, Visitor } from "../../node";
+import { Position } from "../../position";
 import { ConditionExpression } from "../expression";
 
 export default class IfEseStatement implements Statement {
@@ -7,7 +8,8 @@ export default class IfEseStatement implements Statement {
     constructor(
         private condition: ConditionExpression,
         private block: Statement,
-        private elseBlock?: Statement | undefined
+        private elseBlock: Statement | undefined,
+        public readonly position: Position
     ) {}
     
     execute(context: Context): void {

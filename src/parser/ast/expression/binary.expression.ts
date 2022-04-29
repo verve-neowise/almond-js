@@ -2,6 +2,7 @@ import { Context, Types, Value, Arithmetics } from "../../../runtime"
 import { Expression, Visitor } from "../../node"
 import { Token, TokenType } from "../../lexer";
 import { RuntimeError } from "../../errors";
+import { Position } from "../../position";
 
 const { divide, minus, modulo, multiply, plus, power }  = Arithmetics;
 
@@ -10,11 +11,11 @@ export default class BinaryExpression implements Expression {
     constructor(
         private left: Expression,
         private right: Expression,
-        private operator: Token
+        public operator: Token,
     ) { }
     
-    get token(): Token {
-        return this.operator;
+    get position(): Position {
+        return new Position(this.operator, this.operator);
     }
 
     execute(context: Context): Value {
@@ -35,7 +36,7 @@ export default class BinaryExpression implements Expression {
             case TokenType.XOR:
                 return power(leftValue, rightValue);
             default:
-                throw new RuntimeError('R-3003', this.operator, [this.operator.type]);
+                throw new RuntimeError('R-3003', this.position, [this.operator.type]);
         }
     }
 

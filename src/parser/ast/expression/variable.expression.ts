@@ -1,10 +1,14 @@
 import { Context, Value, Types } from "../../../runtime"
 import { Token } from "../../lexer"
 import { Visitor, Expression, Accessible } from "../../node"
+import { Position } from "../../position"
 
 export default class VariableExpression extends Accessible implements Expression {
 
-    constructor(private name: Token) {
+    constructor(
+        private name: Token,
+        public readonly position: Position = new Position(name, name),
+    ) {
         super()
     }
 

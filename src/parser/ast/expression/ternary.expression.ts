@@ -1,6 +1,7 @@
 import { Context, Value, Types } from "../../../runtime"
 import { Token } from "../../lexer"
 import { Visitor, Expression } from "../../node"
+import { Position } from "../../position"
 
 
 export default class TernaryExpression implements Expression {
@@ -8,7 +9,8 @@ export default class TernaryExpression implements Expression {
     constructor(
         public result: Expression,
         public trueExpr: Expression,
-        public falseExpr: Expression
+        public falseExpr: Expression,
+        public readonly position: Position
     ) {}
 
     execute(context: Context): Value {

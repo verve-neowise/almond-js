@@ -2,7 +2,7 @@ import { Token } from "./lexer";
 
 export class Position {
     constructor(
-        public start: Token,
-        public end: Token
+        public readonly start: Token,
+        public readonly end: Token
     ) { }
 }

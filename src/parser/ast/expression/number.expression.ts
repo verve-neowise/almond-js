@@ -1,10 +1,14 @@
 import { Context, Value, Types } from "../../../runtime"
 import { Token } from "../../lexer"
 import { Visitor, Expression } from "../../node"
+import { Position } from "../../position";
 
 export default class NumberExpression implements Expression {
     
-    constructor(private value: Token) {}
+    constructor(
+        private value: Token,
+        public readonly position: Position
+    ) {}
 
     public execute(context: Context): Value {
         return new Value(Number(this.value.text), Types.Number);

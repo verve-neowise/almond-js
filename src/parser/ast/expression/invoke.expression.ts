@@ -1,10 +1,15 @@
 import { Context, Value, Types } from "../../../runtime"
 import { Token } from "../../lexer"
 import { Visitor, Expression } from "../../node"
+import { Position } from "../../position"
 
 export default class InvokeExpression implements Expression {
 
-    constructor(private target: Expression, private args: Expression[]) {}
+    constructor(
+        private target: Expression,
+        private args: Expression[],
+        public readonly position: Position
+) {}
 
     public execute(context: Context): Value {
         let target = this.target.execute(context)

@@ -2,6 +2,7 @@ import { Context, Types, Value } from "../../../runtime"
 import { Expression, Visitor } from "../../node"
 import { Token, TokenType } from "../../lexer";
 import { RuntimeError } from "../../errors";
+import { Position } from "../../position";
 
 export default class ConditionalExpression implements Expression {
     constructor(
@@ -10,8 +11,8 @@ export default class ConditionalExpression implements Expression {
         public operator: Token
     ) {}
 
-    get token(): Token {
-        return this.operator;
+    get position(): Position {
+        return new Position(this.operator, this.operator);
     }
 
     execute(context: Context): Value {
@@ -32,7 +33,7 @@ export default class ConditionalExpression implements Expression {
             case TokenType.NEQ:
                 return new Value(leftValue !== rightValue, Types.Boolean);
             default:
-                throw new RuntimeError('R-3005', this.operator, [this.operator.type]);
+                throw new RuntimeError('R-3005', this.position, [this.operator.type]);
         }
     }
 

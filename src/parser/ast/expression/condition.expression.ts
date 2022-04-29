@@ -2,10 +2,11 @@ import { Context, Types, Value } from "../../../runtime";
 import { RuntimeError } from "../../errors";
 import { Token } from "../../lexer";
 import { Expression, Visitor } from "../../node";
+import { Position } from "../../position";
 
 export default class ConditionExpression implements Expression {
     constructor(
-        private expression: Expression,
+        private expression: Expression
     ) {}
 
     execute(context: Context): Value {
@@ -14,12 +15,12 @@ export default class ConditionExpression implements Expression {
             return value;
         }
         else {
-            throw new RuntimeError('R-3004', this.expression.token, [value.type]);
+            throw new RuntimeError('R-3004', this.expression.position, [value.type]);
         }
     }
 
-    get token(): Token {
-        return this.expression.token;
+    get position(): Position {
+        return this.expression.position;
     }
     
     visit(visitor: Visitor): void {

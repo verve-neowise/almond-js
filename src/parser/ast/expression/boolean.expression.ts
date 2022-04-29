@@ -1,10 +1,14 @@
 import { Context, Types, Value } from "../../../runtime"
 import { Expression, Visitor } from "../../node"
 import { Token } from "../../lexer";
+import { Position } from "../../position";
 
 export default class BooleanExpression implements Expression {
 
-    constructor(public value: Token) {}
+    constructor(
+        public value: Token,
+        public readonly position: Position
+    ) {}
     
     get token(): Token {
         return this.value;
