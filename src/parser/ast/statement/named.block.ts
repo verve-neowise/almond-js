@@ -10,6 +10,14 @@ export default class NamedBlock implements Statement {
         public readonly position: Position = new Position(token, token),
     ) { }
 
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
+
     execute(context: Context): void {
         this.statements.execute(context)
     }

@@ -11,8 +11,12 @@ export default class FieldAccessExpression implements Expression {
         public readonly position: Position = new Position(field, field),
     ) { }
 
-    get token(): Token {
-        return this.field
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
     }
 
     execute(context: Context): Value {
@@ -23,7 +27,7 @@ export default class FieldAccessExpression implements Expression {
             return value
         }
         else {
-            throw new RuntimeError('R-3006', this.token, [this.field.text, object.type])
+            throw new RuntimeError('R-3006', this.position, [this.field.text, object.type])
         }
     }
 

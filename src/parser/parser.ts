@@ -174,7 +174,7 @@ export default class Parser {
         let end = this.expression()
         let step = this.match(TokenType.STEP) ? this.expression() : undefined
         let block = this.statementOrBlock()
-        return new ForStatement(varDeclaration, start, end, step, block, this.positionOf(token))
+        return new ForStatement(varDeclaration, end, step, block, this.positionOf(token))
     }
 
     private ifElse(): Statement {

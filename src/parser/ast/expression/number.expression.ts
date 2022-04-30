@@ -9,6 +9,14 @@ export default class NumberExpression implements Expression {
         private value: Token,
         public readonly position: Position
     ) {}
+    
+    get start(): Token {
+        return this.value
+    }
+
+    get end(): Token {
+        return this.value
+    }
 
     public execute(context: Context): Value {
         return new Value(Number(this.value.text), Types.Number);

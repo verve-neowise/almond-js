@@ -9,6 +9,14 @@ export default class ConditionExpression implements Expression {
         private expression: Expression
     ) {}
 
+    get start(): Token {
+        return this.expression.start
+    }
+
+    get end(): Token {
+        return this.expression.end
+    }
+
     execute(context: Context): Value {
         let value = this.expression.execute(context);
         if (value.type === Types.Boolean) {

@@ -11,6 +11,14 @@ export default class ContinueStatement implements Statement {
         public readonly position: Position
     ) { }
 
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
+
     execute(context: Context): void {
         throw new ContinueError(`Break statement at ${this.token.row}:${this.token.column}`)
     }

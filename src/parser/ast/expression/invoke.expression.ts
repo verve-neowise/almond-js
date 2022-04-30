@@ -9,7 +9,15 @@ export default class InvokeExpression implements Expression {
         private target: Expression,
         private args: Expression[],
         public readonly position: Position
-) {}
+    ) {}
+
+    get start(): Token {
+        return this.target.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
 
     public execute(context: Context): Value {
         let target = this.target.execute(context)

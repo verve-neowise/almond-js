@@ -10,20 +10,30 @@ export default class ForStatement implements Statement {
 
     constructor(
         private variable: VarDeclarationStatement,
-        private start: Expression,
-        private end: Expression,
+        private to: Expression,
         private step: Expression | undefined,
         private block: Statement,
         public readonly position: Position
     ) {}
+    
+    
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }    
 
     execute(context: Context): void {
         let token = this.variable.variable;
+        this.variable.execute(context)
+
         let variable = new VariableExpression(token, new Position(token, token));
 
         while (true) {
             let value = variable.get(context).value;
-            let end = this.end.execute(context).value;
+            let end = this.to.execute(context).value;
 
             if (value > end) {
                 break;

@@ -8,12 +8,19 @@ export default class ConditionalExpression implements Expression {
     constructor(
         public left: Expression,
         public right: Expression,
-        public operator: Token
+        public operator: Token,
+        public position: Position = new Position(operator, operator)
     ) {}
 
-    get position(): Position {
-        return new Position(this.operator, this.operator);
+
+    get start(): Token {
+        return this.left.start
     }
+
+    get end(): Token {
+        return this.right.end
+    }
+
 
     execute(context: Context): Value {
         let leftValue = this.left.execute(context).value;

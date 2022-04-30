@@ -12,6 +12,14 @@ export default class VariableExpression extends Accessible implements Expression
         super()
     }
 
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
+
     public execute(context: Context): Value {
         return this.get(context)
     }

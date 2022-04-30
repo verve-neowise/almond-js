@@ -13,6 +13,14 @@ export default class ArrayAccessExpression extends Accessible implements Express
         super()
      }
 
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end        
+    }
+
     execute(context: Context): Value {
         return this.get(context)
     }
@@ -24,7 +32,7 @@ export default class ArrayAccessExpression extends Accessible implements Express
             return array.get(index)
         }
         else {
-            throw new RuntimeError('R-3001', this.token, [array.type])
+            throw new RuntimeError('R-3001', this.position, [array.type])
         }
     }
     
@@ -35,7 +43,7 @@ export default class ArrayAccessExpression extends Accessible implements Express
             array.set(index, value)
         }
         else {
-            throw new RuntimeError('R-3001', this.token, [array.type])
+            throw new RuntimeError('R-3001', this.position, [array.type])
         }
     }
 

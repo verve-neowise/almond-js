@@ -8,11 +8,19 @@ const { plus, minus, multiply, divide, modulo, power } = Arithmetics;
 export default class AssignmentStatement implements Statement {
     
     constructor(
-        private target: Accessible,
+        private target: Expression & Accessible,
         private value: Expression,
         private operator: Token,
         public readonly position: Position
     ) {}
+
+    get start(): Token {
+        return this.target.start
+    }
+
+    get end(): Token {
+        return this.value.end
+    }
 
     execute(context: Context): void {
 

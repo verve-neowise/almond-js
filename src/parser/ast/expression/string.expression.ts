@@ -9,7 +9,17 @@ export default class StringExpression implements Expression {
     constructor(
         private value: Token,
         public readonly position: Position
-        ) {}
+    ) {}
+
+
+    get start(): Token {
+        return this.value
+    }
+
+    get end(): Token {
+        return this.value
+    }
+
 
     public execute(context: Context): Value {
         return new Value(this.value.text, Types.String);

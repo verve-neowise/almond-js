@@ -10,6 +10,15 @@ export default class ArrayExpression implements Expression {
         public readonly position: Position
     ) { }
     
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end        
+    }
+
+
     execute(context: Context): Value {
         return new ArrayValue(this.elements.map(element => element.execute(context)))
     }

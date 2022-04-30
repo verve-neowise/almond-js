@@ -18,6 +18,14 @@ export default class BinaryExpression implements Expression {
         return new Position(this.operator, this.operator);
     }
 
+    get start(): Token {
+        return this.left.start
+    }
+
+    get end(): Token {
+        return this.right.end
+    }
+
     execute(context: Context): Value {
         let leftValue = this.left.execute(context);
         let rightValue = this.right.execute(context);

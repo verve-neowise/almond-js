@@ -13,6 +13,14 @@ export default class VarDeclarationStatement implements Statement {
         public readonly position: Position
     ) {}
 
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.value.end
+    }
+
     execute(context: Context): void {
         let name = this.variable.text;
         if (context.isExists(name)) {

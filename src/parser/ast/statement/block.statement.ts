@@ -8,6 +8,14 @@ export default class Block implements Statement {
         private statements: Statement[] = [],
         public readonly position: Position,
     ) {}
+    
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
 
     execute(context: Context): void {
         for (let statement of this.statements) {

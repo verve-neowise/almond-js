@@ -11,6 +11,14 @@ export default class BreakStatement implements Statement {
         public readonly position: Position
     ) {}
 
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
+
     execute(context: Context): void {
         throw new BreakError(`Break statement at ${this.token.row}:${this.token.column}`)
     }

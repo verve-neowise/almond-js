@@ -9,6 +9,16 @@ export default class BooleanExpression implements Expression {
         public value: Token,
         public readonly position: Position
     ) {}
+
+    
+    get start(): Token {
+        return this.position.start
+    }
+
+    get end(): Token {
+        return this.position.end
+    }
+
     
     get token(): Token {
         return this.value;

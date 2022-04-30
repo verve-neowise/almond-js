@@ -13,6 +13,14 @@ export default class TernaryExpression implements Expression {
         public readonly position: Position
     ) {}
 
+    get start(): Token {
+        return this.result.start
+    }
+
+    get end(): Token {
+        return this.falseExpr.end
+    }
+
     execute(context: Context): Value {
         let result = this.result.execute(context)
         if (result.type === Types.Boolean) {
